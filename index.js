@@ -1,50 +1,89 @@
 const { request } = require("http");
-const { fetchMyIP, fetchCoordsByIP } = require("./iss");
+const { fetchMyIP, fetchCoordsByIP, fetchISSFlyOverTimes } = require("./iss");
 
-fetchMyIP((error, ip) => {
+// fetchMyIP((error, ip) => {
+//   if (error) {
+//     console.log("It didn't work!", error);
+//     return;
+//   }
+//   console.log("It worked! Returned IP: ", ip);
+// });
+
+fetchCoordsByIP("162.245.144.188", (error, coordinates) => {
   if (error) {
     console.log("It didn't work!", error);
     return;
   }
-  console.log("It worked! Returned IP: ", ip);
 
-  // const fetchCoordsByIP = function(ip, callback) {
-  //   request(`http://ipwho.is/${ip}`, (error, response, body) => {
-
-  //     if (error) {
-  //       callback(error, null);
-  //       return;
-  //     }
-  const fetchCoordsByIP = function (ip, callback) {
-    // console.log(error);
-    // console.log(data);
-    request(`http://ipwho.is/${ip}`, (error, response, body) => {
-      if (error) {
-        return callback(error, null);
-      }
-      const parseBody = JSON.parse(body);
-
-      if (!parseBody.success) {
-        const error = "Not found";
-
-        const message = `Success status was ${parseBody.success}. Server message says: ${parseBody.message} when fetching for IP ${parseBody.ip}`;
-
-        return callback(Error(error), null);
-      }
-      const latitude = parseBody.latitude;
-      const longtitude = parseBody.longtitude;
-
-      return callback(null, { latitude, longtitude });
-    });
-  };
+  console.log("It worked! Returned coordinates:", coordinates);
 });
 
-// const myCallback = function (error, data) {
-//   if (error) {
-//     console.log("error", { error });
-//   } else {
-//     console.log("data:", { data });
-//   }
-// };
+// const exampleCoords = { latitude: "49.27670", longitude: "-123.13000" };
 
-// fetchCoordsByIP("99.232.65.216", myCallback);
+// fetchISSFlyOverTimes(exampleCoords, (error, passTimes) => {
+//   if (error) {
+//     console.log("It didn't work!", error);
+//     return;
+//   }
+
+//   console.log("It worked! Returned flyover times:", passTimes);
+// });
+
+ const { nextISSTimesForMyLocation } = require("./iss");
+// {
+//   message: "success",
+//   request: {
+//   datetime: 1630085914,
+//   latitude: -80,
+//   longitude: -23,
+//   altitude: 1,
+//   number: 5
+// },
+// response: [
+//   {
+//     risetime: 1630160442,
+//     duration: 289
+//   },
+//   {
+//     risetime: 1630196842,
+//     duration: 635
+//   },
+//   {
+//     risetime: 1630233242,
+//     duration: 615
+//   },
+//   {
+//     risetime: 1630269642,
+//     duration: 467
+//   },
+//   {
+//     risetime: 1630306042,
+//     duration: 146
+//   }
+//   ]
+// }
+
+// nextISSTimesForMyLocation((error, passTimes) => {
+//   if (error) {
+//     return console.log("It didn't work!", error);
+//   }
+//   // success, print out the deets!
+//   console.log(passTimes);
+// });
+
+const printPassTimes = function(passTimes) {
+  for (const pass of passTimes) {
+    const datetime = new Date(0);
+    datetime.setUTCSeconds(pass.risetime);
+    const duration = pass.duration;
+    console.log(`Next pass at ${datetime} for ${duration} seconds!`);
+  }
+};
+
+nextISSTimesForMyLocation((error, passTimes) => {
+  if (error) {
+    return console.log("It didn't work!", error);
+  }
+  // success, print out the deets!
+  printPassTimes(passTimes);
+});
